@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   ValidationPipe,
+  NotFoundException,
 } from '@nestjs/common';
 import { SubscriptionsService } from './subscriptions.service';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
@@ -26,7 +27,11 @@ export class SubscriptionsController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.subscriptionsService.findOne(id);
+    const subscription = this.subscriptionsService.findOne(id);
+    if (!subscription) {
+      throw new NotFoundException(`Subscription with ID ${id} not found`);
+    }
+    return subscription;
   }
 
   @Get('customer/:customerId')

@@ -1,29 +1,44 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
-
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+#Technical task for Unite - Tormod Rønning
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+A mini subscription API built with nestjs. Only for local use. Can create customers, products and subscribe customers to a product.
+
+Simple end-to-end tests with Jest are set up. These are almost fully AI generated, and mostly a tool to help testing while creating the api.
+
+### Architechture
+
+I chose to use uuid as id's here instead of incremental integer. This ensures a unique id, and also makes it near impossible to guess the id of a user.
+
+All of these (except auth) uses the following (what i call) "default" fields: ID, CreatedAt, UpdatedAt
+
+#### Customer
+
+This is setup with the following default fields: email, firstname, lastname
+
+I chose these simple fields as i feel like its the minimal needed. In retrospect first and last name might not have been needed either. In a reallife scenario alot more fields would be nice here, like for example address for mail and billing, or other user-optional data that could help understand the customers better.
+
+#### Product
+
+Here i chose the following fields: name, description, price, currency, billingPeriod.
+
+The name and description fields here is nice for presentation in any frontend to explain to the customer what they are buying. For subscription products like these this should be more or less sufficient for a backend i think.
+
+Price is a natural thing to have here together with billing period. I set something simple as weekly, monthly and yealy as values here, but this can be expanded to more periods, or even something as "one-time-purchase" for special cases (even tho that isnt really a subscription, it could work if its any campaign deal. Or buying single article when there is only that type of product setup in the shop). Currency also feels at home here as its tied up to the price. Tax could also have been added here, especially if its a international page, as taxes is often calculated differently for different countries, and the price here would be expected to be including tax for end users.
+
+#### Subscription
+
+Here i chose the following fields: customerId, productId, status, startDate, endDate, nextBillingDate, cancelledAt.
+
+Customer and product id's are important here as a subscription is a bond between them.
+
+Here a subscription is set to status active when buying a subscription. Here its simple and it goes directly to active, but in a system with payment normally it would go to pending untill the payment is successful. As one subscribes here the next billing date is set to "now" + a week, month or year depending on the product billingPeriod. EndDate will be set to null, as a subscription will renew at the end of the billing period. StatDate will be sate to "now" at the time of subscribing.
+
+If canceled the endtime will be set to nextBillingDate, and status will update to canceled. Here it would be natural to have a cronjob running daily to set canceled subscriptions to expired when endDate is past, and at this point i would also set nextBillingDate to false. I do not do this on cancelation incase of resubscriptions (this is not impelmented).
+
+#### Auth
+
+This is just a very basic auth to set all endpoints to private, requiring the correct 'Bearer {API_KEY}' as header when making requests. Setup with nestjs guard
 
 ## Project setup
 
@@ -34,73 +49,188 @@ $ npm install
 ## Compile and run the project
 
 ```bash
-# development
 $ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
 ```
 
-## Run tests
+## Run e2e tests
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
 $ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
 ```
 
-## Deployment
+## Authorization
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+All API endpoints (except the root `/` endpoint) require an API key for authorization.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+**Set your API key:**
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+export API_KEY=your-api-key-here
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Or create a `.env` file (see `.env.example`):
 
-## Resources
+```
+API_KEY=your-api-key-here
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+**Default API key:** `top-secret-label` (change in production!)
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+**Usage in requests:**
 
-## Support
+```bash
+# Using Bearer token format (recommended)
+curl -H "Authorization: Bearer your-api-key-here" http://localhost:3000/customers
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+# Or using ApiKey format
+curl -H "Authorization: ApiKey your-api-key-here" http://localhost:3000/customers
+```
 
-## Stay in touch
+## How to test manually
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### Create a customer, product and subscription
 
-## License
+#### using bash and saving as variables for further use
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+```bash
+# Set your API key (or use default)
+export API_KEY=${API_KEY:top-secret-label}
 
-## Things that could have been done better/ if more time:
+CUSTOMER_ID=$(curl -s -X POST http://localhost:3000/customers \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $API_KEY" \
+  -d '{"email":"ola.normann@norge.no","firstName":"Ola","lastName":"Normann"}' | grep -o '"id":"[^"]*' | sed 's/"id":"//')
+
+PRODUCT_ID=$(curl -s -X POST http://localhost:3000/products \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $API_KEY" \
+  -d '{"name":"Full access to EVERYTHING","description":"King of the world for a month!","price":1337.00,"currency":"NOK","billingPeriod":"monthly"}' | grep -o '"id":"[^"]*' | sed 's/"id":"//')
+
+SUBSCRIPTION_ID=$(curl -s -X POST http://localhost:3000/subscriptions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $API_KEY" \
+  -d "{\"customerId\":\"$CUSTOMER_ID\",\"productId\":\"$PRODUCT_ID\"}" | grep -o '"id":"[^"]*' | sed 's/"id":"//')
+
+echo "Customer ID: $CUSTOMER_ID"
+echo "Product ID: $PRODUCT_ID"
+echo "Subscription ID: $SUBSCRIPTION_ID"
+```
+
+#### Other methods
+
+If using other methods to test this, remember to save the id's in the responses from the POST requests below. Swap out $CUSTOMER_ID, $PRODUCT_ID, $SUBSCRIPTION_ID from the commands in the GET and PATCH requests respectively
+
+Create customer:
+
+```bash
+curl -s -X POST http://localhost:3000/customers \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $API_KEY" \
+  -d '{"email":"ola.normann@norge.no","firstName":"Ola","lastName":"Normann"}'
+```
+
+Create Product
+
+```bash
+curl -s -X POST http://localhost:3000/products \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $API_KEY" \
+  -d '{"name":"Full access to EVERYTHING","description":"King of the world for a month!","price":1337.00,"currency":"NOK","billingPeriod":"monthly"}'
+```
+
+Create Subscription
+
+```bash
+curl -s -X POST http://localhost:3000/subscriptions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $API_KEY" \
+  -d "{\"customerId\":\"$CUSTOMER_ID\",\"productId\":\"$PRODUCT_ID\"}"
+```
+
+### Customers
+
+#### Get All Customers
+
+**GET** `/customers`
+
+```bash
+curl -H "Authorization: Bearer $API_KEY" http://localhost:3000/customers
+```
+
+#### Get Customer by ID
+
+**GET** `/customers/:id`
+
+```bash
+curl -H "Authorization: Bearer $API_KEY" http://localhost:3000/customers/$CUSTOMER_ID
+```
+
+### Product
+
+#### Get All Products
+
+**GET** `/products`
+
+```bash
+curl -H "Authorization: Bearer $API_KEY" http://localhost:3000/products
+```
+
+#### Get Product by ID
+
+**GET** `/products/:id`
+
+```bash
+curl -H "Authorization: Bearer $API_KEY" http://localhost:3000/products/$PRODUCT_ID
+```
+
+### Subscriptions
+
+#### Get All Subscriptions
+
+**GET** `/subscriptions`
+
+```bash
+curl -H "Authorization: Bearer $API_KEY" http://localhost:3000/subscriptions
+```
+
+#### Get Subscription by ID
+
+**GET** `/subscriptions/:id`
+
+```bash
+curl -H "Authorization: Bearer $API_KEY" http://localhost:3000/subscriptions/$SUBSCRIPTION_ID
+```
+
+#### Get Subscriptions by Customer ID
+
+**GET** `/subscriptions/customer/:customerId`
+
+```bash
+curl -H "Authorization: Bearer $API_KEY" http://localhost:3000/subscriptions/customer/$CUSTOMER_ID
+```
+
+#### Get Subscriptions by Product ID
+
+**GET** `/subscriptions/product/:productId`
+
+```bash
+curl -H "Authorization: Bearer $API_KEY" http://localhost:3000/subscriptions/product/$PRODUCT_ID
+```
+
+#### Cancel a Subscription
+
+**PATCH** `/subscriptions/:id/cancel`
+
+```bash
+curl -X PATCH -H "Authorization: Bearer $API_KEY" http://localhost:3000/subscriptions/$SUBSCRIPTION_ID/cancel
+```
+
+## Things that could have been done if i had more time:
 
 - Added autoincremental integer for better ease of use and faster queries in the models in addition to uuid.
 - Soft deleting of products
-- Hard deleting of customers, with removing personal info from subscriptions.
-- Logging of subscription actions. In a real world scenario it would be very helpful to keep logs of changes done to any subscription. Both for fixing bugs and for having a source of truth.
-- Setup cronjob to handle expireation or renewing of a subscription. Here we would either update nextBillingDate to null or set it higher as depending on billingPeriod.
+- Deletion of customers
+- Setup of public routes, now they should all need auth
+- More comprehensive data stored on customers
+- Better validation - e.g no duplicate emails on customers, no duplicate names on products.
+- Cronjob to expire subscriptions
