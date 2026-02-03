@@ -96,3 +96,11 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
+## Things that could have been done better/ if more time:
+
+- Added autoincremental integer for better ease of use and faster queries in the models in addition to uuid.
+- Soft deleting of products
+- Hard deleting of customers, with removing personal info from subscriptions.
+- Logging of subscription actions. In a real world scenario it would be very helpful to keep logs of changes done to any subscription. Both for fixing bugs and for having a source of truth.
+- Setup cronjob to handle expireation or renewing of a subscription. Here we would either update nextBillingDate to null or set it higher as depending on billingPeriod.
