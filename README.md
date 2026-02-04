@@ -65,7 +65,7 @@ All API endpoints (except the root `/` endpoint) require an API key for authoriz
 **Set your API key:**
 
 ```bash
-export API_KEY=your-api-key-here
+API_KEY=your-api-key-here
 ```
 
 Or create a `.env` file (see `.env.example`):
@@ -88,13 +88,21 @@ curl -H "Authorization: ApiKey your-api-key-here" http://localhost:3000/customer
 
 ## How to test manually
 
+Copy .env.example into .env
+
+Start api with running
+
+```bash
+npm run start
+```
+
 ### Create a customer, product and subscription
 
 #### using bash and saving as variables for further use
 
 ```bash
 # Set your API key (or use default)
-export API_KEY=${API_KEY:top-secret-label}
+API_KEY=top-secret-label
 
 CUSTOMER_ID=$(curl -s -X POST http://localhost:3000/customers \
   -H "Content-Type: application/json" \

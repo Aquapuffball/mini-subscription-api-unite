@@ -4,11 +4,12 @@ import {
   ExecutionContext,
   UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Observable } from 'rxjs';
 
 @Injectable()
 export class ApiKeyGuard implements CanActivate {
-  constructor() {}
+  constructor(private configService: ConfigService) {}
 
   canActivate(
     context: ExecutionContext,
@@ -20,7 +21,8 @@ export class ApiKeyGuard implements CanActivate {
       throw new UnauthorizedException('API key is required');
     }
 
-    const validApiKey = process.env.API_KEY || 'second-to-top-secret-label';
+    const validApiKey =
+      this.configService.get<string>('API_KEY') || 'second-to-top-secret-label';
 
     if (apiKey !== validApiKey) {
       throw new UnauthorizedException('Invalid API key');
